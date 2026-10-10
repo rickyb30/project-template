@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Every check this project must pass, locally and in CI. No model in the loop.
+#   scripts/verify.sh
+# Exit 0 when all configured checks pass, 1 otherwise.
+set -u
+cd "$(dirname "$0")/.." || exit 1
+
+# Project commands. Leave one empty to skip that check until the project has it.
+LINT_CMD='{{ lint_command | replace("'", "'\\''") }}'
+TYPECHECK_CMD='{{ typecheck_command | replace("'", "'\\''") }}'
+TEST_CMD='{{ test_command | replace("'", "'\\''") }}'
+
+fails=0
+ok() { printf '  ok    %s\n' "$*"; }
+skip() { printf '  skip  %s\n' "$*"; }
+bad() {
+  printf '  FAIL  %s\n' "$*"
+  fails=$((fails + 1))
+}
+
+run_check() {
+  local name="$1" cmd="$2"
+  if [ -z "$cmd" ]; then
+    skip "$name: no command configured in scripts/verify.sh"
+    return 0
+  fi
+  if bash -c "$cmd"; then ok "$name"; else bad "$name ($cmd)"; fi
+}
+
+run_check lint "$LINT_CMD"
+run_check "type check" "$TYPECHECK_CMD"
+run_check tests "$TEST_CMD"
+
+# Secret scan of the working tree.
+if command -v gitleaks >/dev/null 2>&1; then
+  if gitleaks stdin --help >/dev/null 2>&1; then
+    gitleaks dir . --redact --no-banner >/dev/null 2>&1
+  else
+    gitleaks detect --no-git --source . --redact --no-banner >/dev/null 2>&1
+  fi
+  if [ $? -eq 0 ]; then ok "secret scan"; else bad "secret scan: gitleaks found a possible secret (run gitleaks to see where)"; fi
+elif [ -n "${CI:-}" ]; then
+  bad "secret scan: gitleaks is not installed"
+else
+  skip "secret scan: gitleaks is not installed"
+fi
+
+# Pipeline documents: front matter must carry a known status, and a plan must point at
+# an architecture document that exists.
+fm_get() {
+  awk -v key="$1" '
+    { sub(/\r$/, "") }
+    NR == 1 { if ($0 != "---") exit; next }
+    /^---[ \t]*$/ { exit }
+    {
+      if (match($0, "^" key "[ \t]*:")) {
+        v = substr($0, RLENGTH + 1)
+        sub(/[ \t]+#.*$/, "", v)
+        gsub(/^[ \t]+|[ \t]+$/, "", v)
+        print v
+        exit
+      }
+    }' "$2"
+}
+check_status() {
+  local file="$1" allowed="$2" status
+  status=$(fm_get status "$file")
+  case " $allowed " in
+    *" $status "*) return 0 ;;
+  esac
+  bad "$file: status '${status:-missing}' is not one of: $allowed"
+  return 1
+}
+
+docs_before=$fails
+for f in docs/architecture/*.md; do
+  [ -e "$f" ] || continue
+  check_status "$f" "draft challenged approved"
+done
+for f in docs/plans/*.md; do
+  [ -e "$f" ] || continue
+  case "$f" in *-log.md) continue ;; esac
+  check_status "$f" "draft approved" || continue
+  arch=$(fm_get architecture "$f")
+  [ -n "$arch" ] && [ -f "$arch" ] || bad "$f: architecture '${arch:-missing}' does not exist"
+done
+today=$(date +%Y-%m-%d)
+for f in docs/knowledge/patterns/*.md docs/knowledge/lessons/*.md docs/knowledge/references/*.md docs/knowledge/inbox/*.md; do
+  [ -e "$f" ] || continue
+  check_status "$f" "proposed accepted retired" || continue
+  due=$(fm_get review-by "$f")
+  if [ "$(fm_get status "$f")" = accepted ] && [ -n "$due" ] && [ "$due" \< "$today" ]; then
+    printf '  note  %s is past its review-by date (%s)\n' "$f" "$due"
+  fi
+done
+[ "$fails" -eq "$docs_before" ] && ok "pipeline documents"
+
+echo
+if [ "$fails" -gt 0 ]; then
+  echo "verify: $fails check(s) failed."
+  exit 1
+fi
+echo "verify: ok."

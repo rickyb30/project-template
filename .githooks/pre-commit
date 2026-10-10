@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# This repository is public: scan staged changes for secrets and denylisted terms
+# using the hooks that agent-config installs. Fails closed when they are missing.
+set -u
+hooks="$HOME/.claude/hooks"
+for script in secret-scan.sh denylist-scan.sh; do
+  [ -x "$hooks/$script" ] || {
+    echo "pre-commit: $hooks/$script not found. Bootstrap agent-config first." >&2
+    exit 1
+  }
+done
+"$hooks/secret-scan.sh" --pre-commit || exit 1
+"$hooks/denylist-scan.sh" --staged || exit 1

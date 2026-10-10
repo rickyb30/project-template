@@ -1,0 +1,22 @@
+# {{ project_name }}
+
+{{ description or "TODO: describe the project." }}
+
+## Getting started
+
+```bash
+git config core.hooksPath .githooks   # once per clone: scan commits for secrets
+scripts/verify.sh                     # lint, types, tests, secret scan
+```
+
+## How work flows
+
+Changes go through a gated pipeline. Two steps are approvals that only a person gives.
+
+1. Write a design in `docs/architecture/NNN-name.md` (copy `000-template.md`).
+2. `/rb-intake`, then `/rb-research`. Revise the design, then set `status: approved`.
+3. `/rb-draft-plan`. Review the plan, then set `status: approved`.
+4. `/rb-implement`, one milestone at a time, then `/rb-review-diff`.
+5. `scripts/verify.sh` and CI.
+
+Lessons worth keeping go to `docs/knowledge/`; see `docs/knowledge/CONTRIBUTING.md`.

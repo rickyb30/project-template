@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Scan staged changes for secrets. Enable once per clone:
+#   git config core.hooksPath .githooks
+set -u
+command -v gitleaks >/dev/null 2>&1 || {
+  echo "pre-commit: gitleaks is not installed, refusing to commit." >&2
+  exit 1
+}
+if gitleaks stdin --help >/dev/null 2>&1; then
+  gitleaks git --pre-commit --staged --redact --no-banner
+else
+  gitleaks protect --staged --redact --no-banner
+fi

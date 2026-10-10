@@ -1,0 +1,70 @@
+# Generic project skeleton for the agent-config pipeline.
+# Usage: copier copy gh:rickyb30/project-template <new-project-dir>
+_min_copier_version: "9.0.0"
+_subdirectory: template
+_templates_suffix: .jinja
+_answers_file: .copier-answers.yml
+
+_message_after_copy: |
+  Project created in {{ _copier_conf.dst_path }}.
+
+  Next:
+    cd {{ _copier_conf.dst_path }}
+    git init && git config core.hooksPath .githooks
+    scripts/verify.sh
+  Then fill in CLAUDE.md and docs/requirements.md, and write the first design from
+  docs/architecture/000-template.md.
+
+project_name:
+  type: str
+  help: Human-readable project name
+  validator: "{% if not project_name %}A project name is required.{% endif %}"
+
+project_slug:
+  type: str
+  help: Short name for folders and identifiers (lowercase letters, digits, hyphens)
+  default: "{{ project_name | lower | replace(' ', '-') | replace('_', '-') }}"
+  validator: >-
+    {% if not (project_slug | regex_search('^[a-z][a-z0-9-]*$')) %}
+    Use lowercase letters, digits and hyphens, starting with a letter.
+    {% endif %}
+
+description:
+  type: str
+  help: One sentence on what this project is for
+  default: ""
+
+stack:
+  type: str
+  help: Main languages, platforms and tools (free text, goes into CLAUDE.md)
+  default: ""
+
+lint_command:
+  type: str
+  help: Command that lints the project (leave empty to configure later)
+  default: ""
+
+typecheck_command:
+  type: str
+  help: Command that type-checks or validates the project (leave empty to configure later)
+  default: ""
+
+test_command:
+  type: str
+  help: Command that runs the tests (leave empty to configure later)
+  default: ""
+
+source_paths:
+  type: str
+  help: >-
+    Comma-separated folders the approval gate protects, for example "src,tests,infra".
+    Leave empty to protect everything except docs/ and .claude/.
+  default: ""
+
+ci_provider:
+  type: str
+  help: Where CI runs
+  choices:
+    GitHub Actions: github
+    None, or set up separately: none
+  default: github

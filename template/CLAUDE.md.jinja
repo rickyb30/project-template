@@ -1,0 +1,38 @@
+# {{ project_name }}
+
+{{ description or "TODO: one sentence on what this project is for." }}
+
+Project facts only. Working style and pipeline rules come from the global
+instructions; if a rule appears in both places, delete it from one.
+
+## Stack
+
+{{ stack or "TODO: languages, platforms, frameworks and their versions." }}
+
+## Commands
+
+| Task | Command |
+| --- | --- |
+| All checks | `scripts/verify.sh` |
+| Lint | {{ "`" ~ lint_command ~ "`" if lint_command else "TODO" }} |
+| Type check or validate | {{ "`" ~ typecheck_command ~ "`" if typecheck_command else "TODO" }} |
+| Tests | {{ "`" ~ test_command ~ "`" if test_command else "TODO" }} |
+
+## Layout
+
+TODO: the folders that matter and what lives in each.
+
+## Constraints
+
+TODO: things that must hold in this project and are not obvious from the code. For
+example: environments and who may change them, data that must not leave a boundary,
+interfaces other teams depend on, naming and tagging rules.
+
+## Pipeline
+
+This project uses the gated pipeline (`.claude/pipeline.json`).
+
+- Requirements: `docs/requirements.md`
+- Designs start from `docs/architecture/000-template.md`
+- Conventions: the `project-conventions` skill in `.claude/skills/`
+- Knowledge: `docs/knowledge/INDEX.md`

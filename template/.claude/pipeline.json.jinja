@@ -1,0 +1,10 @@
+{%- set ns = namespace(items=[]) -%}
+{%- for part in source_paths.split(',') -%}
+  {%- set clean = part.strip().strip('/') -%}
+  {%- if clean -%}{%- set ns.items = ns.items + [clean] -%}{%- endif -%}
+{%- endfor -%}
+{%- if ns.items -%}
+{ "source_paths": {{ ns.items | tojson }} }
+{%- else -%}
+{}
+{%- endif %}
