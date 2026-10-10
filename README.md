@@ -33,6 +33,7 @@ Copier asks a few questions:
 | Description, stack | Go into `CLAUDE.md` | a TODO is left for you |
 | Lint, type-check, test commands | What `scripts/verify.sh` runs | that check is skipped until you set it |
 | Source paths | Folders the approval gate protects | everything except `docs/` and `.claude/` |
+| Allowed deploy commands | Environment-changing commands agents may run | agents may run none |
 | CI | GitHub Actions workflow, or none | GitHub Actions |
 
 Then:
@@ -50,14 +51,16 @@ scripts/verify.sh                                 # should print "verify: ok."
 2. Write what the project must do in `docs/requirements.md`.
 3. Put conventions someone could get wrong into
    `.claude/skills/project-conventions/SKILL.md`: naming, environments, data rules.
-4. Copy `docs/architecture/000-template.md` to `001-your-first-design.md` and write
-   your first design.
+4. Talk your first design through with Claude, then run `/rb-design <name>` to have
+   it written to `docs/architecture/001-<name>.md` as a draft. (Or copy
+   `000-template.md` and write it by hand.)
 5. Run the pipeline on it.
 
 ## The pipeline at a glance
 
 | Step | You type | Result |
 | --- | --- | --- |
+| Write up the design you discussed | `/rb-design <name>` | `docs/architecture/NNN-name.md` (draft) |
 | Check the design is complete | `/rb-intake <design>` | a gap report |
 | Have it challenged | `/rb-research <design>` | `docs/research/NNN-assessment.md` |
 | **Gate 1** | you set `status: approved` in the design | |
@@ -77,12 +80,13 @@ happens when a gate is closed and when a plan cannot be followed.
 ```
 CLAUDE.md                      project facts only: stack, commands, constraints
 .claude/
-  pipeline.json                switches the approval gate on for this project
+  pipeline.json                switches the approval gate on; see docs/pipeline-config.md
   settings.json                project permissions
   skills/project-conventions/  where project conventions go
   agents/                      empty; add a same-named agent only to override a global one
 docs/
   requirements.md
+  pipeline-config.md           what .claude/pipeline.json can contain, with examples
   architecture/000-template.md mirrors the intake checklist
   adr/  research/  plans/  reviews/
   knowledge/                   INDEX.md, patterns/, lessons/, references/, inbox/

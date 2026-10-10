@@ -34,7 +34,7 @@ A="$TMP/defaults"
 copier copy --defaults --quiet -d project_name="Example Project" "$SRC" "$A" >/dev/null 2>&1
 check "copier copy with defaults" 0 $?
 for path in CLAUDE.md .copier-answers.yml .claude/pipeline.json .claude/settings.json \
-  .claude/skills/project-conventions/SKILL.md docs/requirements.md \
+  .claude/skills/project-conventions/SKILL.md docs/requirements.md docs/pipeline-config.md \
   docs/architecture/000-template.md docs/knowledge/INDEX.md docs/knowledge/CONTRIBUTING.md \
   docs/knowledge/inbox docs/plans docs/reviews docs/research docs/adr \
   scripts/verify.sh .githooks/pre-commit .github/workflows/ci.yml .gitignore; do
@@ -60,12 +60,15 @@ copier copy --defaults --quiet \
   -d project_name="Order Sync" -d project_slug="order-sync" \
   -d description="Keeps a fictional order feed in step." -d stack="Python, SQL" \
   -d lint_command="true" -d typecheck_command="true" -d test_command="true" \
-  -d source_paths="src, tests,infra/" -d ci_provider="none" "$SRC" "$B" >/dev/null 2>&1
+  -d source_paths="src, tests,infra/" -d allow_deploy="terraform apply, dbt build --target dev" \
+  -d ci_provider="none" "$SRC" "$B" >/dev/null 2>&1
 check "copier copy with every option" 0 $?
 [ ! -e "$B/.github" ]
 check "no CI folder when ci_provider is none" 0 $?
 jq -e '.source_paths == ["src","tests","infra"]' "$B/.claude/pipeline.json" >/dev/null 2>&1
 check "source_paths rendered as a clean list" 0 $?
+jq -e '.allow_deploy == ["terraform apply","dbt build --target dev"]' "$B/.claude/pipeline.json" >/dev/null 2>&1
+check "allow_deploy rendered as a clean list" 0 $?
 grep -q "Python, SQL" "$B/CLAUDE.md"
 check "stack reaches CLAUDE.md" 0 $?
 (cd "$B" && git init -q && bash scripts/verify.sh >"$TMP/verify-b.log" 2>&1)

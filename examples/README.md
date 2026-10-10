@@ -18,7 +18,7 @@ reviews the result. Each stage reads the previous stage's file and writes its ow
 source code cannot be written until both of your approvals are in place.
 
 ```
-you: design ──> /rb-intake ──> /rb-research ──> YOU APPROVE ──> /rb-draft-plan
+you + /rb-design ──> /rb-intake ──> /rb-research ──> YOU APPROVE ──> /rb-draft-plan
                                                                       │
        scripts/verify.sh <── /rb-review-diff <── /rb-implement <── YOU APPROVE
 ```
@@ -28,13 +28,26 @@ you: design ──> /rb-intake ──> /rb-research ──> YOU APPROVE ──> 
 The project was created from this template, so it already contains
 `.claude/pipeline.json`. That file switches the approval gate on for the project.
 
-## Step 1: You write the design
+## Step 1: You work out the design
 
-You think the problem through, in chat or on paper, and save the result as
-`docs/architecture/001-daily-orders-load.md`, copied from `000-template.md`, with
-`status: draft`.
+You talk the problem through with Claude in a session inside the project: what you
+want, your ideas, the options, what you would rather avoid. When you are happy with
+where it landed, you type:
 
-This is the only stage with no agent. The design is yours.
+```
+/rb-design daily-orders-load
+```
+
+Claude writes what was discussed to `docs/architecture/001-daily-orders-load.md` with
+`status: draft`, using the template's sections. Anything you did not cover is marked
+`TODO: not discussed` instead of being filled in with a guess, and unconfirmed
+assumptions are listed as open questions.
+
+Agreeing on the idea in conversation is not an approval. The document is a draft
+until you approve it at gate 1, after it has been challenged.
+
+You can also write the file by hand from `000-template.md`. If you worked the design
+out in the Claude chat app instead, ask for it as Markdown and save it to that path.
 
 ## Step 2: Check it is complete
 
@@ -200,7 +213,7 @@ involved in this step.
 
 | You | The agents |
 | --- | --- |
-| Wrote the design | Checked it was complete |
+| Brought the ideas and made the design choices | Wrote the design up, checked it was complete |
 | Read the assessment and revised the design | Found the duplicate-rows risk |
 | Approved the design | |
 | Read and approved the plan | Broke the work into milestones with checkable criteria |

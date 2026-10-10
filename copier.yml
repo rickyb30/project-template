@@ -61,6 +61,14 @@ source_paths:
     Leave empty to protect everything except docs/ and .claude/.
   default: ""
 
+allow_deploy:
+  type: str
+  help: >-
+    Comma-separated commands that change a live environment and that agents may run
+    in this project, for example "terraform apply, dbt build --target dev".
+    Leave empty so that a person runs every such command.
+  default: ""
+
 ci_provider:
   type: str
   help: Where CI runs

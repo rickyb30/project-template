@@ -1,10 +1,18 @@
-{%- set ns = namespace(items=[]) -%}
+{%- set ns = namespace(paths=[], deploy=[]) -%}
 {%- for part in source_paths.split(',') -%}
   {%- set clean = part.strip().strip('/') -%}
-  {%- if clean -%}{%- set ns.items = ns.items + [clean] -%}{%- endif -%}
+  {%- if clean -%}{%- set ns.paths = ns.paths + [clean] -%}{%- endif -%}
 {%- endfor -%}
-{%- if ns.items -%}
-{ "source_paths": {{ ns.items | tojson }} }
+{%- for part in allow_deploy.split(',') -%}
+  {%- set clean = part.strip() -%}
+  {%- if clean -%}{%- set ns.deploy = ns.deploy + [clean] -%}{%- endif -%}
+{%- endfor -%}
+{%- if ns.paths and ns.deploy -%}
+{{ {"source_paths": ns.paths, "allow_deploy": ns.deploy} | tojson(indent=2) }}
+{%- elif ns.paths -%}
+{{ {"source_paths": ns.paths} | tojson(indent=2) }}
+{%- elif ns.deploy -%}
+{{ {"allow_deploy": ns.deploy} | tojson(indent=2) }}
 {%- else -%}
 {}
 {%- endif %}

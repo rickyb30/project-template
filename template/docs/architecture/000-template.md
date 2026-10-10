@@ -6,7 +6,8 @@ date: 2000-01-01
 
 # Title of the design
 
-Copy this file to `NNN-short-name.md`, starting at 001. `status` moves from `draft` to
+Copy this file to `NNN-short-name.md`, starting at 001, or let `/rb-design` create it
+from a conversation. `status` moves from `draft` to
 `challenged` (set by `/rb-research`) to `approved` (set by a person, never by an agent).
 
 ## Goals
