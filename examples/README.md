@@ -1,235 +1,58 @@
-# The pipeline, by example
+# The workflow, by example
 
-This folder follows one small piece of work from idea to reviewed code, showing
-exactly what you type, what Claude does, and which file appears at each step. Every
-file mentioned is in [daily-orders-load/](daily-orders-load/) so you can open it.
+One small, fictional project taken from idea to working code. The two files it produces
+are in [expensive-queries/](expensive-queries/docs/).
 
-The work: a fictional shop exports its orders as a CSV file every night, and you want
-them loaded into a warehouse table each morning. The scenario and every name in it are
-invented.
+The project: a weekly report of the ten most expensive queries in a shared log store,
+posted to a chat channel.
 
-## The idea in one paragraph
+## 1. Discuss and research
 
-"Pipeline" here means the fixed sequence of stages a change passes through. It is not
-a data pipeline or a CI pipeline. You write a design. One agent challenges it. You
-approve it. A second agent turns it into a plan. You approve that. A third agent
-builds one milestone. A fourth agent, which has not seen the third agent's reasoning,
-reviews the result. Each stage reads the previous stage's file and writes its own, and
-source code cannot be written until both of your approvals are in place.
+In a Claude Code session inside the project you talk it through: what you want, which
+data the platform keeps about query costs, how its workflows are scheduled, whether the
+chat integration already exists. Ask Claude to look things up as you go. This is where
+research belongs, before anything is written down.
 
-```
-you + /rb-design ──> /rb-intake ──> /rb-research ──> YOU APPROVE ──> /rb-draft-plan
-                                                                      │
-       scripts/verify.sh <── /rb-review-diff <── /rb-implement <── YOU APPROVE
-```
+## 2. `/rb-design expensive-queries`
 
-## Before you start
+Claude writes what you settled on to
+[docs/architecture/001-expensive-queries.md](expensive-queries/docs/architecture/001-expensive-queries.md),
+with `status: draft`. It has five sections: purpose, high-level architecture, tech
+stack, identity, security and governance.
 
-The project was created from this template, so it already contains
-`.claude/pipeline.json`. That file switches the approval gate on for the project.
+This project runs inside the platform with its built-in permissions, so identity and
+security both say `Not applicable` with a one-line reason. Something you didn't discuss
+would appear as `TODO: not discussed`. Points that came from research keep their link.
 
-## Step 1: You work out the design
+## 3. You review and approve
 
-You talk the problem through with Claude in a session inside the project: what you
-want, your ideas, the options, what you would rather avoid. When you are happy with
-where it landed, you type:
-
-```
-/rb-design daily-orders-load
-```
-
-Claude writes what was discussed to `docs/architecture/001-daily-orders-load.md` with
-`status: draft`, using the template's sections. Anything you did not cover is marked
-`TODO: not discussed` instead of being filled in with a guess, and unconfirmed
-assumptions are listed as open questions.
-
-Agreeing on the idea in conversation is not an approval. The document is a draft
-until you approve it at gate 1, after it has been challenged.
-
-You can also write the file by hand from `000-template.md`. If you worked the design
-out in the Claude chat app instead, ask for it as Markdown and save it to that path.
-
-## Step 2: Check it is complete
-
-You type:
-
-```
-/rb-intake docs/architecture/001-daily-orders-load.md
-```
-
-Claude prints a table and changes nothing:
-
-```
-Intake: docs/architecture/001-daily-orders-load.md  (status: draft)
-
-| Section | Result | Note |
-| --- | --- | --- |
-| Goals | ok | |
-| Non-goals | ok | |
-| Key decisions | weak | "append to the table" names no rejected option |
-| NFRs | ok | |
-| Data | missing | the design moves data but has no Data section |
-
-Ready for research: no (1 missing, 1 weak)
-```
-
-You add the missing section and run it again. This takes a minute and saves the next
-stage from guessing.
-
-## Step 3: Have it challenged
-
-You type:
-
-```
-/rb-research docs/architecture/001-daily-orders-load.md
-```
-
-The researcher agent reads the design and the repository, looks things up, and writes
-[docs/research/001-assessment.md](daily-orders-load/docs/research/001-assessment.md).
-The design's status becomes `challenged`.
-
-In the example the assessment found the real problem: the first draft **appended**
-each file to the table, and the scheduler retries failed jobs, so any retry would
-duplicate a whole day. It is recommendation R1 there, with the facts it rests on. The
-researcher did not rewrite the design; it listed the options and their costs.
-
-## Gate 1: You approve the design
-
-You read the assessment, change the design (append became merge, a staging table was
-added), and then edit the front matter yourself:
+Read it against the conversation. When everything is captured, edit the front matter
+yourself:
 
 ```yaml
 status: approved
 ```
 
-No agent can do this. If one tries, the hook stops it:
+Claude can't do this step. If it tries, a hook blocks the write.
 
-```
-Blocked: 'docs/architecture/001-daily-orders-load.md' would have status: approved
-after this change. Approval is a human gate...
-```
+## 4. `/rb-intake docs/architecture/001-expensive-queries.md`
 
-The approved design is
-[docs/architecture/001-daily-orders-load.md](daily-orders-load/docs/architecture/001-daily-orders-load.md).
+Claude breaks the design into phases in
+[docs/plans/001-expensive-queries.md](expensive-queries/docs/plans/001-expensive-queries.md).
+Each phase has what gets built, the files, a "done when" you can check, and a checkbox.
+The deploy step is marked "(you run this)".
 
-## Step 4: Turn it into a plan
+Run before approval, it stops: "Not approved yet: set `status: approved` in ... yourself".
 
-You type:
+## 5. `/rb-implement docs/plans/001-expensive-queries.md`
 
-```
-/rb-draft-plan docs/architecture/001-daily-orders-load.md
-```
+Claude builds the first phase not yet done, runs `scripts/verify.sh`, ticks the phase,
+and tells you what changed and what you need to run. Run it again for the next phase,
+or once with `all` at the end to do every remaining phase.
 
-The planner agent writes
-[docs/plans/001-daily-orders-load.md](daily-orders-load/docs/plans/001-daily-orders-load.md)
-as `status: draft`, plus one short decision record per key decision, such as
-[docs/adr/0001-merge-on-order-line.md](daily-orders-load/docs/adr/0001-merge-on-order-line.md).
+If a phase can't be done as the design says, Claude stops and asks rather than
+improvising. When every phase is ticked, it closes the gate again.
 
-The plan splits the work into two milestones, each with acceptance criteria you could
-check yourself ("loading the same file a second time leaves the row count unchanged"),
-and it states what must not be touched.
+## What you did
 
-If you had run this before approving the design, it would have refused:
-
-```
-Gate: docs/architecture/001-daily-orders-load.md has status challenged.
-A human must set status: approved first.
-```
-
-## Gate 2: You approve the plan
-
-You read the plan. This is the cheapest moment to change direction: nothing has been
-built. When you are satisfied, you set `status: approved` in the plan yourself.
-
-## Step 5: Build one milestone
-
-You type:
-
-```
-/rb-implement docs/plans/001-daily-orders-load.md M1
-```
-
-The implementer agent builds milestone M1 only, runs `scripts/verify.sh`, and appends
-an entry to [docs/plans/001-log.md](daily-orders-load/docs/plans/001-log.md) saying
-what changed and what the checks reported.
-
-Until gate 2, the same request is stopped the moment the agent tries to write code:
-
-```
-Blocked: plan 'docs/plans/001-daily-orders-load.md' has status 'draft', not approved.
-A human approves the plan before any source change.
-```
-
-## Step 6: Review it independently
-
-You type:
-
-```
-/rb-review-diff
-```
-
-The reviewer agent is given the plan and the diff, and nothing about what the
-implementer thought it was doing. It writes
-[docs/reviews/001-review.md](daily-orders-load/docs/reviews/001-review.md).
-
-In the example it found a blocker: the merge matched on the order number alone, but
-the file has one row **per order line**, so an order with three lines kept only one.
-The implementer's own tests passed, because the sample data had one line per order.
-This is the kind of error a second, uninformed reader catches and the author does not.
-
-You send the fix back through `/rb-implement`, and the log records it.
-
-## Step 7: When the plan cannot be followed
-
-On milestone M2 the plan said to reuse an existing alert helper. The implementer found
-the helper could not do the job, and that fixing it meant changing a file the plan
-said must not change. It did not pick a way forward. It wrote a `DEVIATION` entry in
-the log with the two options and stopped.
-
-You wrote the decision into the log, ran `/rb-implement` again, and M2 finished. See
-the `M2` entries in [the log](daily-orders-load/docs/plans/001-log.md).
-
-## Step 8: Keep what was learned
-
-The reviewer also wrote a proposal to
-[docs/knowledge/inbox/](daily-orders-load/docs/knowledge/inbox/2026-02-03-confirm-file-grain.md):
-"confirm the grain of a file before choosing a merge key". Agents can only write to
-`inbox/`. You decide: delete it, or move it to `lessons/` and add a line to
-`INDEX.md`. On the next piece of work the researcher and planner read that index first.
-
-You can also record a lesson yourself at any time:
-
-```
-/rb-lesson merges need a test row that would collapse under a too-narrow key
-```
-
-## Step 9: Verify
-
-`scripts/verify.sh` runs your lint, type check and tests, a secret scan, and a check
-that every pipeline document has a valid status. CI runs the same script. No model is
-involved in this step.
-
-## What you did, and what the agents did
-
-| You | The agents |
-| --- | --- |
-| Brought the ideas and made the design choices | Wrote the design up, checked it was complete |
-| Read the assessment and revised the design | Found the duplicate-rows risk |
-| Approved the design | |
-| Read and approved the plan | Broke the work into milestones with checkable criteria |
-| Decided the deviation | Built each milestone and ran the checks |
-| Decided what to do about the findings | Found the wrong merge key |
-| Decided whether to keep the lesson | Proposed the lesson |
-
-Your time went on four decisions. The typing, the lookups, the checking and the
-second opinion were done for you.
-
-## When not to use it
-
-A typo, a one-line fix or a quick experiment does not need a design document. The
-pipeline costs several times the tokens of a single session, because four agents each
-read the context afresh. Use it for work where building the wrong thing, or building
-the right thing carelessly, would cost you more than that.
-
-For a small change in a project that has the gate switched on, write a short plan and
-approve it, or make the change by hand.
+Four things: the discussion, reading the design, approving it, and running the deploy.

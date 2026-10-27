@@ -34,9 +34,7 @@ A="$TMP/defaults"
 copier copy --defaults --quiet -d project_name="Example Project" "$SRC" "$A" >/dev/null 2>&1
 check "copier copy with defaults" 0 $?
 for path in CLAUDE.md .copier-answers.yml .claude/pipeline.json .claude/settings.json \
-  .claude/skills/project-conventions/SKILL.md docs/requirements.md docs/pipeline-config.md \
-  docs/architecture/000-template.md docs/knowledge/INDEX.md docs/knowledge/CONTRIBUTING.md \
-  docs/knowledge/inbox docs/plans docs/reviews docs/research docs/adr \
+  docs/pipeline-config.md docs/architecture/000-template.md docs/plans \
   scripts/verify.sh .githooks/pre-commit .github/workflows/ci.yml .gitignore; do
   has "defaults" "$A/$path"
 done
@@ -83,9 +81,13 @@ copier copy --defaults --quiet -d project_name="Broken" -d test_command="false" 
 check "verify.sh fails when a check fails" 1 $?
 
 echo "bad pipeline doc"
-printf -- '---\nstatus: aproved\n---\n# x\n' >"$A/docs/plans/001-x.md"
+printf -- '---\nstatus: aproved\n---\n# x\n' >"$A/docs/architecture/001-x.md"
 (cd "$A" && bash scripts/verify.sh >/dev/null 2>&1)
 check "verify.sh rejects an unknown status value" 1 $?
+rm "$A/docs/architecture/001-x.md"
+printf -- '---\ndesign: docs/architecture/009-missing.md\n---\n' >"$A/docs/plans/001-x.md"
+(cd "$A" && bash scripts/verify.sh >/dev/null 2>&1)
+check "verify.sh rejects a plan whose design is missing" 1 $?
 
 echo
 if [ "$fail" -gt 0 ]; then

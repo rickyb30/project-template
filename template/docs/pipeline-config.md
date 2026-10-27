@@ -10,7 +10,7 @@ The file is plain JSON, so it cannot hold comments. This page is its documentati
 
 | Key | Type | Meaning | When absent |
 | --- | --- | --- | --- |
-| `source_paths` | list of folders | The folders agents may write to only while an approved plan is active | Every path except `docs/` and `.claude/` is protected |
+| `source_paths` | list of folders | The folders Claude may write to only while the active plan's design is approved | Every path except `docs/` and `.claude/` is protected |
 | `allow_deploy` | list of command prefixes | Commands that change a live environment and that agents may run here | Agents may run none; a person runs them |
 
 Deleting the file switches the approval gate off for the project.
@@ -25,7 +25,7 @@ default for a new project:
 ```
 
 Protect only the code, so agents can still edit the README, configuration and
-scripts without a plan. A good starting point for an existing project:
+scripts without an approved design. A good starting point for an existing project:
 
 ```json
 {
@@ -34,7 +34,7 @@ scripts without a plan. A good starting point for an existing project:
 ```
 
 An infrastructure and data project. Infrastructure code, SQL models and job
-definitions need an approved plan, and agents may run development builds but never
+definitions need an approved design, and agents may run development builds but never
 an apply:
 
 ```json
@@ -57,9 +57,9 @@ A sandbox project where agents may apply infrastructure to a throwaway environme
 
 **`source_paths`** entries are folder names relative to the project root. `"src"`
 covers `src/` and everything under it, and does not cover `src-old/`. While no plan is
-active, or the active plan or its design is not `approved`, writes there are blocked.
-`docs/plans/.active` names the active plan; `/rb-implement` sets it. Delete that file
-when a plan is finished to close the gate again.
+active, or the active plan's design is not `approved`, writes there are blocked.
+`docs/plans/.active` names the active plan; `/rb-implement` sets it, and removes it
+once every phase is done, which closes the gate again.
 
 **`allow_deploy`** entries are matched from the start of the command, so
 `"dbt build --target dev"` allows `dbt build --target dev --select orders` and does not

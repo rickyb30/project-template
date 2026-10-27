@@ -6,54 +6,32 @@ date: 2000-01-01
 
 # Title of the design
 
-Copy this file to `NNN-short-name.md`, starting at 001, or let `/rb-design` create it
-from a conversation. `status` moves from `draft` to
-`challenged` (set by `/rb-research`) to `approved` (set by a person, never by an agent).
+Usually written for you by `/rb-design <name>` after you have discussed the idea. To
+write one by hand, copy this file to `NNN-short-name.md`, starting at 001. Set
+`status: approved` yourself when it is right; Claude never does.
 
-## Goals
+## Purpose
 
-Outcomes that could be checked, each tied to a requirement in `docs/requirements.md`.
+What the project is for and the problem it solves. A few sentences.
 
-## Non-goals
+## High-level architecture
 
-What this design deliberately does not do.
+The main parts, how they connect, and how data or requests flow between them.
 
-## Constraints
+## Tech stack
 
-Technical, organisational, budget and time limits.
+Languages, platforms, services and tools, with versions where they matter.
 
-## Components
+## Identity
 
-For each component: its responsibility, its interfaces, and what it depends on.
+Who and what authenticates, with which identities, roles or service accounts.
+Or: `Not applicable: <reason>`.
 
-## Key decisions
+## Security and governance
 
-For each decision: the option chosen, at least one option rejected, and why.
-
-## NFRs
-
-Targets with numbers: latency, availability, volume, recovery, security.
-
-## Data
-
-Required when the design stores, moves or transforms data: sources, volumes, freshness,
-retention, classification. Otherwise write "not applicable".
-
-## Environments and rollout
-
-Required when the design changes deployed infrastructure, pipelines or schemas: the
-environments, how a change is promoted, how it is rolled back. Otherwise "not applicable".
-
-## Cost
-
-Required when the design adds compute, storage or a paid service: an estimate with its
-assumptions, and an owner or limit. Otherwise "not applicable".
-
-## Access
-
-Required when the design adds identities, roles, keys or network paths: who and what
-gets access to what, and why. Otherwise "not applicable".
+Secrets handling, network exposure, data classification, access, audit, cost limits.
+Or: `Not applicable: <reason>`.
 
 ## Open questions
 
-Numbered, or "none".
+Leave out when there are none.

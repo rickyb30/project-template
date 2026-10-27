@@ -12,8 +12,7 @@ _message_after_copy: |
     cd {{ _copier_conf.dst_path }}
     git init && git config core.hooksPath .githooks
     scripts/verify.sh
-  Then fill in CLAUDE.md and docs/requirements.md, and write the first design from
-  docs/architecture/000-template.md.
+  Then fill in CLAUDE.md, discuss your first idea with Claude, and run /rb-design.
 
 project_name:
   type: str

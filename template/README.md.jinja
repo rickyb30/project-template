@@ -11,13 +11,8 @@ scripts/verify.sh                     # lint, types, tests, secret scan
 
 ## How work flows
 
-Changes go through a gated pipeline. Two steps are approvals that only a person gives.
-
-1. Talk the design through with Claude, then `/rb-design <name>` writes it to
-   `docs/architecture/NNN-name.md` as a draft. Or copy `000-template.md` by hand.
-2. `/rb-intake`, then `/rb-research`. Revise the design, then set `status: approved`.
-3. `/rb-draft-plan`. Review the plan, then set `status: approved`.
-4. `/rb-implement`, one milestone at a time, then `/rb-review-diff`.
-5. `scripts/verify.sh` and CI.
-
-Lessons worth keeping go to `docs/knowledge/`; see `docs/knowledge/CONTRIBUTING.md`.
+1. Discuss and research the idea with Claude.
+2. `/rb-design <name>` writes it up in `docs/architecture/`.
+3. Review it and set `status: approved` in it yourself.
+4. `/rb-intake <design>` breaks it into phases in `docs/plans/`.
+5. `/rb-implement <plan>` builds the next phase (add `all` for every remaining phase).

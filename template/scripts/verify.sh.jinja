@@ -45,8 +45,8 @@ else
   skip "secret scan: gitleaks is not installed"
 fi
 
-# Pipeline documents: front matter must carry a known status, and a plan must point at
-# an architecture document that exists.
+# Workflow documents: a design carries a known status, and a plan names a design that
+# exists.
 fm_get() {
   awk -v key="$1" '
     { sub(/\r$/, "") }
@@ -62,38 +62,22 @@ fm_get() {
       }
     }' "$2"
 }
-check_status() {
-  local file="$1" allowed="$2" status
-  status=$(fm_get status "$file")
-  case " $allowed " in
-    *" $status "*) return 0 ;;
-  esac
-  bad "$file: status '${status:-missing}' is not one of: $allowed"
-  return 1
-}
-
 docs_before=$fails
 for f in docs/architecture/*.md; do
   [ -e "$f" ] || continue
-  check_status "$f" "draft challenged approved"
+  status=$(fm_get status "$f")
+  case "$status" in
+    draft | approved) ;;
+    *) bad "$f: status '${status:-missing}' is not draft or approved" ;;
+  esac
 done
 for f in docs/plans/*.md; do
   [ -e "$f" ] || continue
-  case "$f" in *-log.md) continue ;; esac
-  check_status "$f" "draft approved" || continue
-  arch=$(fm_get architecture "$f")
-  [ -n "$arch" ] && [ -f "$arch" ] || bad "$f: architecture '${arch:-missing}' does not exist"
+  design=$(fm_get design "$f")
+  [ -n "$design" ] || design=$(fm_get architecture "$f")
+  [ -n "$design" ] && [ -f "$design" ] || bad "$f: design '${design:-missing}' does not exist"
 done
-today=$(date +%Y-%m-%d)
-for f in docs/knowledge/patterns/*.md docs/knowledge/lessons/*.md docs/knowledge/references/*.md docs/knowledge/inbox/*.md; do
-  [ -e "$f" ] || continue
-  check_status "$f" "proposed accepted retired" || continue
-  due=$(fm_get review-by "$f")
-  if [ "$(fm_get status "$f")" = accepted ] && [ -n "$due" ] && [ "$due" \< "$today" ]; then
-    printf '  note  %s is past its review-by date (%s)\n' "$f" "$due"
-  fi
-done
-[ "$fails" -eq "$docs_before" ] && ok "pipeline documents"
+[ "$fails" -eq "$docs_before" ] && ok "workflow documents"
 
 echo
 if [ "$fails" -gt 0 ]; then

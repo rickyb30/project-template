@@ -28,12 +28,14 @@ TODO: things that must hold in this project and are not obvious from the code. F
 example: environments and who may change them, data that must not leave a boundary,
 interfaces other teams depend on, naming and tagging rules.
 
-## Pipeline
+## Conventions
 
-This project uses the gated pipeline (`.claude/pipeline.json`, explained in
-`docs/pipeline-config.md`).
+TODO: rules someone could get wrong here: naming, where new code goes, environments
+and who may change them, data handling.
 
-- Requirements: `docs/requirements.md`
-- Designs start from `docs/architecture/000-template.md`
-- Conventions: the `project-conventions` skill in `.claude/skills/`
-- Knowledge: `docs/knowledge/INDEX.md`
+## Workflow
+
+This project uses the gated workflow (`.claude/pipeline.json`, explained in
+`docs/pipeline-config.md`): `/rb-design`, then a human approves the design, then
+`/rb-intake` and `/rb-implement`. Designs live in `docs/architecture/`, phases in
+`docs/plans/`.

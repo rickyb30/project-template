@@ -5,7 +5,7 @@ set up for the [agent-config](https://github.com/rickyb30/agent-config) pipeline
 
 - **New to the pipeline? Read [examples/README.md](examples/README.md) first.** It
   follows one small job from idea to reviewed code and shows every file produced.
-- This template is generic. It ships no stack and an empty knowledge area. Everything
+- This template is generic. It ships no stack. Everything
   specific to a project is filled in after generation and stays in that project's own
   repository.
 
@@ -46,51 +46,36 @@ scripts/verify.sh                                 # should print "verify: ok."
 
 ## First hour in a new project
 
-1. Fill in the TODOs in `CLAUDE.md`: stack, commands, layout, constraints. Project
-   facts only.
-2. Write what the project must do in `docs/requirements.md`.
-3. Put conventions someone could get wrong into
-   `.claude/skills/project-conventions/SKILL.md`: naming, environments, data rules.
-4. Talk your first design through with Claude, then run `/rb-design <name>` to have
-   it written to `docs/architecture/001-<name>.md` as a draft. (Or copy
-   `000-template.md` and write it by hand.)
-5. Run the pipeline on it.
+1. Fill in the TODOs in `CLAUDE.md`: stack, commands, conventions, constraints.
+   Project facts only.
+2. Discuss and research your first idea with Claude, then run `/rb-design <name>`.
+3. Review the design, approve it, then `/rb-intake` and `/rb-implement`.
 
-## The pipeline at a glance
+## The workflow at a glance
 
 | Step | You type | Result |
 | --- | --- | --- |
-| Write up the design you discussed | `/rb-design <name>` | `docs/architecture/NNN-name.md` (draft) |
-| Check the design is complete | `/rb-intake <design>` | a gap report |
-| Have it challenged | `/rb-research <design>` | `docs/research/NNN-assessment.md` |
-| **Gate 1** | you set `status: approved` in the design | |
-| Turn it into a plan | `/rb-draft-plan <design>` | `docs/plans/NNN-name.md` |
-| **Gate 2** | you set `status: approved` in the plan | |
-| Build one milestone | `/rb-implement <plan> [M1]` | code, tests, `docs/plans/NNN-log.md` |
-| Review independently | `/rb-review-diff` | `docs/reviews/NNN-review.md` |
-| Record a lesson | `/rb-lesson <text>` | a proposal in `docs/knowledge/inbox/` |
-| Verify | `scripts/verify.sh` | lint, types, tests, secret scan |
+| Discuss and research the idea | (conversation) | |
+| Write it up | `/rb-design <name>` | `docs/architecture/NNN-name.md` (draft) |
+| **Approve** | you set `status: approved` in the design | |
+| Break into phases | `/rb-intake <design>` | `docs/plans/NNN-name.md` |
+| Build | `/rb-implement <plan>` (or `<plan> all`) | code and tests; the phase is ticked |
 
-Source code cannot be written until both gates are passed. The worked example in
-[examples/](examples/README.md) shows what each step looks like, including what
-happens when a gate is closed and when a plan cannot be followed.
+Source code can't be written until you approve the design. The worked example in
+[examples/](examples/README.md) shows each step.
 
 ## What a generated project contains
 
 ```
-CLAUDE.md                      project facts only: stack, commands, constraints
+CLAUDE.md                      project facts: stack, commands, conventions, constraints
 .claude/
   pipeline.json                switches the approval gate on; see docs/pipeline-config.md
   settings.json                project permissions
-  skills/project-conventions/  where project conventions go
-  agents/                      empty; add a same-named agent only to override a global one
 docs/
-  requirements.md
   pipeline-config.md           what .claude/pipeline.json can contain, with examples
-  architecture/000-template.md mirrors the intake checklist
-  adr/  research/  plans/  reviews/
-  knowledge/                   INDEX.md, patterns/, lessons/, references/, inbox/
-scripts/verify.sh              lint, types, tests, secret scan, pipeline document check
+  architecture/000-template.md the design doc layout
+  plans/                       phases written by /rb-intake
+scripts/verify.sh              lint, types, tests, secret scan, workflow document check
 .githooks/pre-commit           secret scan on staged changes
 .github/workflows/ci.yml       runs scripts/verify.sh (only if you chose GitHub CI)
 ```
