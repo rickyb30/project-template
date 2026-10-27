@@ -60,6 +60,7 @@ scripts/verify.sh                                 # should print "verify: ok."
 | **Approve** | you set `status: approved` in the design | |
 | Break into phases | `/rb-intake <design>` | `docs/plans/NNN-name.md` |
 | Build | `/rb-implement <plan>` (or `<plan> all`) | code and tests; the phase is ticked |
+| Second opinion, any time | `/rb-review` (or a branch, or a design path) | findings from an independent, read-only reviewer |
 
 Source code can't be written until you approve the design. The worked example in
 [examples/](examples/README.md) shows each step.
